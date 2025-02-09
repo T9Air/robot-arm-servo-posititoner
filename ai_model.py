@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers
@@ -8,8 +7,9 @@ from keras import layers
 # Assumes CSV has columns: servo1, servo2, ..., servoN, pos_x, pos_y, pos_z
 data = pd.read_csv('training_data.csv')
 # Split into inputs and outputs
-input_columns = [col for col in data.columns if col.startswith("servo")]
-target_columns = ['pos_x', 'pos_y', 'pos_z']
+# Now the input is the position columns and the output is the servo columns
+input_columns = ['pos_x', 'pos_y', 'pos_z']
+target_columns = [col for col in data.columns if col.startswith("servo")]
 X = data[input_columns].values
 y = data[target_columns].values
 
@@ -18,10 +18,18 @@ model = keras.Sequential([
     layers.Input(shape=(X.shape[1],)),
     layers.Dense(64, activation='relu'),
     layers.Dense(64, activation='relu'),
-    layers.Dense(3)  # Output layer for 3D position (x, y, z)
+    # Adjust output layer to match number of servos
+    layers.Dense(y.shape[1])
 ])
 
-model.compile(optimizer='adam', loss='mean_squared_error')
+model.compile(
+    optimizer='adam',
+    loss='mean_squared_error',
+    metrics=[
+        'mae',
+        tf.keras.metrics.RootMeanSquaredError()
+    ]
+)
 
 # Train the model
 model.fit(X, y, epochs=50, batch_size=32, validation_split=0.2)
