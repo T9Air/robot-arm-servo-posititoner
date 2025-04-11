@@ -69,12 +69,12 @@ void setup() {
   int top_deg = topMicroDeg(top.readMicroseconds());
 
   // Set up buttons
-  pinMode(up, INPUT);
-  pinMode(down, INPUT);
-  pinMode(right, INPUT);
-  pinMode(left, INPUT);
-  pinMode(forward, INPUT);
-  pinMode(backward, INPUT);
+  pinMode(up, INPUT_PULLUP);
+  pinMode(down, INPUT_PULLUP);
+  pinMode(right, INPUT_PULLUP);
+  pinMode(left, INPUT_PULLUP);
+  pinMode(forward, INPUT_PULLUP);
+  pinMode(backward, INPUT_PULLUP);
 
   // Set up leds
   pinMode(alarmLED, OUTPUT);
@@ -93,23 +93,34 @@ void setup() {
   target_y = angleorposition[1];
   current_z = angleorposition[2];
   target_z = angleorposition[2];
+  
+  angleorposition[0] = 0;
+  angleorposition[1] = 0;
+  angleorposition[2] = 0;
 }
 
 void loop() {
+  // Read the potentiometer value and calculate move_amount
+  static int lastPotValue = -1; // Store the last potentiometer value
   int potValue = analogRead(pot);
-  move_amount = map(potValue, 0, 1023, .1, 10); // Map potentiometer value to move amount
-
-  if (digitalRead(up) == HIGH) {
+  
+  // Update move_amount only if the potentiometer value changes
+  if (potValue != lastPotValue) {
+    move_amount = (potValue / 1023.0) * (10000.0 - 0.1) + 0.1; // Map potentiometer value to move amount
+    lastPotValue = potValue; // Update the last potentiometer value
+  }
+  // Check button presses and update target position
+  if (digitalRead(up) == LOW) {
     target_z += move_amount;
-  } else if (digitalRead(down) == HIGH) {
+  } else if (digitalRead(down) == LOW) {
     target_z -= move_amount;
-  } else if (digitalRead(right) == HIGH) {
+  } else if (digitalRead(right) == LOW) {
     target_x += move_amount;
-  } else if (digitalRead(left) == HIGH) {
+  } else if (digitalRead(left) == LOW) {
     target_x -= move_amount;
-  } else if (digitalRead(forward) == HIGH) {
+  } else if (digitalRead(forward) == LOW) {
     target_y += move_amount;
-  } else if (digitalRead(backward) == HIGH) {
+  } else if (digitalRead(backward) == LOW) {
     target_y -= move_amount;
   }
 
@@ -155,22 +166,22 @@ void loop() {
 
       digitalWrite(moveLED, HIGH);
       // Move the servos
-      for(int i = 0; i <= maxDiff; i++) {
+      for (int i = 0; i <= maxDiff; i++) {
         // Move servos
         int baseMicros = base.readMicroseconds();
         int bottom1Micros = bottom1.readMicroseconds();
         int bottom2Micros = bottom2.readMicroseconds();
         int topMicros = top.readMicroseconds();
-        if (baseMicros != baseMove){
+        if (baseMicros != baseMove) {
           base.writeMicroseconds(baseMicros + baseDirection);
         }
-        if (bottom1Micros != bottom1Move){
+        if (bottom1Micros != bottom1Move) {
           bottom1.writeMicroseconds(bottom1Micros + bottom1Direction);
         }
-        if (bottom2Micros != bottom2Move){
+        if (bottom2Micros != bottom2Move) {
           bottom2.writeMicroseconds(bottom2Micros + bottom2Direction);
         }
-        if (topMicros != topMove){
+        if (topMicros != topMove) {
           top.writeMicroseconds(topMicros + topDirection);
         }
 
@@ -178,7 +189,9 @@ void loop() {
         current_x = angleorposition[0];
         current_y = angleorposition[1];
         current_z = angleorposition[2];
-        
+        angleorposition[0] = 0;
+        angleorposition[1] = 0;
+        angleorposition[2] = 0;
         delay(1);
       }
       digitalWrite(moveLED, LOW);
@@ -219,7 +232,7 @@ void determineAngles(double x, double y, double z){
   
   double joint_1 = baseAngle + extendedBaseAngle;
   double joint_2 = 180 - (atan2(z, radiusXY) * (180.0 / M_PI) + angleB);
-  double joint_3 = 270 - angleC;
+  double joint_3 = 180 - angleC;
 
   if (joint_1 > 180 || joint_1 < 0 || 
       joint_2 > 180 || joint_2 < 0 ||
