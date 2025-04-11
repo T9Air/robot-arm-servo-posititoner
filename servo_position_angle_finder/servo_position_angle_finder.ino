@@ -36,6 +36,8 @@ int backward = 8;
 
 // Alarm led - tells if goal is unable to be reached
 int alarmLED = 12;
+// Move led - tells that arm is being moved, and buttons will not work
+int moveLED = 13;
 
 // Current position
 double current_x;
@@ -74,8 +76,9 @@ void setup() {
   pinMode(forward, INPUT);
   pinMode(backward, INPUT);
 
-  // Set up alarm led
+  // Set up leds
   pinMode(alarmLED, OUTPUT);
+  pinMode(moveLED, OUTPUT);
 
   // Set the position of the arm joints
   // Will not be the exact for the arm being used - just for testing
@@ -114,7 +117,71 @@ void loop() {
   if (target_x != current_x || target_y != current_y || target_z != current_z) {
     determineAngles(target_x, target_y, target_z);
     if (angleorposition[0] != 1000) {
-      
+      int baseMove = int(baseDegMicro(angleorposition[0]));
+      int bottom1Move = int(bottom1DegMicro(angleorposition[1]));
+      int bottom2Move = int(bottom2DegMicro(angleorposition[1]));
+      int topMove = int(topDegMicro(angleorposition[2]));
+
+      int baseDiff = baseMove - base.readMicroseconds();
+      int bottom1Diff = bottom1Move - bottom1.readMicroseconds();
+      int bottom2Diff = bottom2Move - bottom2.readMicroseconds();
+      int topDiff = topMove - top.readMicroseconds();
+      int maxDiff = max(abs(baseDiff), max(abs(bottom1Diff), abs(topDiff)));
+
+      int baseDirection;
+      int bottom1Direction;
+      int bottom2Direction;
+      int topDirection;
+      if (baseDiff > 0) {
+        baseDirection = 1;
+      } else {
+        baseDirection = -1;
+      }
+      if (bottom1Diff > 0) {
+        bottom1Direction = 1;
+      } else {
+        bottom1Direction = -1;
+      }
+      if (bottom2Diff > 0) {
+        bottom2Direction = 1;
+      } else {
+        bottom2Direction = -1;
+      }
+      if (topDiff > 0) {
+        topDirection = 1;
+      } else {
+        topDirection = -1;
+      }
+
+      digitalWrite(moveLED, HIGH);
+      // Move the servos
+      for(int i = 0; i <= maxDiff; i++) {
+        // Move servos
+        int baseMicros = base.readMicroseconds();
+        int bottom1Micros = bottom1.readMicroseconds();
+        int bottom2Micros = bottom2.readMicroseconds();
+        int topMicros = top.readMicroseconds();
+        if (baseMicros != baseMove){
+          base.writeMicroseconds(baseMicros + baseDirection);
+        }
+        if (bottom1Micros != bottom1Move){
+          bottom1.writeMicroseconds(bottom1Micros + bottom1Direction);
+        }
+        if (bottom2Micros != bottom2Move){
+          bottom2.writeMicroseconds(bottom2Micros + bottom2Direction);
+        }
+        if (topMicros != topMove){
+          top.writeMicroseconds(topMicros + topDirection);
+        }
+
+        determinePosition(baseMicroDeg(baseMicros + baseDirection), bottom1MicroDeg(bottom1Micros + bottom1Direction), topMicroDeg(topMicros + topDirection));
+        current_x = angleorposition[0];
+        current_y = angleorposition[1];
+        current_z = angleorposition[2];
+        
+        delay(1);
+      }
+      digitalWrite(moveLED, LOW);
     } else {
       target_x = current_x;
       target_y = current_y;
