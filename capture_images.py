@@ -3,7 +3,7 @@ import time
 import cv2
 import os
 
-arduino = serial.Serial('COM3', 9600, timeout=1)
+arduino = serial.Serial('COM5', 9600, timeout=1)
 
 camera = cv2.VideoCapture(0)
 
@@ -21,7 +21,7 @@ def capture_image():
         number += 1
         if number == 4:
             number = 500
-        arduino.write(b'1')
+        arduino.write(b'1\n')
     else:
         print("Failed to capture image")
 
