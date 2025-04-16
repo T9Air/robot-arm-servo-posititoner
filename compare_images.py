@@ -30,6 +30,7 @@ def main():
         for candidate_file in image_files:
             if candidate_file == ref_filename:
                 continue
+            print(f"Comparing {ref_filename} with {candidate_file}")  # Debug: indicate progress
             candidate_path = os.path.join(images_dir, candidate_file)
             cand_img = load_image(candidate_path)
             if cand_img is None:
