@@ -33,6 +33,7 @@ def main():
             templates[template_file] = img
 
     # Compare each template with all other images to find the best match
+    best_matches = {}
     for ref_filename, ref_img in templates.items():
         best_ssim = -1
         best_match = None
@@ -51,8 +52,14 @@ def main():
             if score > best_ssim:
                 best_ssim = score
                 best_match = candidate_file
+        # Store the best match instead of printing immediately
         if best_match:
-            print(f"{ref_filename} matches closest with {best_match} (score: {best_ssim:.4f})")
+            best_matches[ref_filename] = (best_match, best_ssim)
+    
+    # Display all best matches at the end
+    print("\nSummary of best matches:")
+    for ref_filename, (best_match, best_ssim) in best_matches.items():
+        print(f"{ref_filename} matches closest with {best_match} (score: {best_ssim:.4f})")
 
 if __name__ == "__main__":
     main()
