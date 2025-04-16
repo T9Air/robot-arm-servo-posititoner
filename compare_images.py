@@ -1,5 +1,6 @@
 import cv2
 import os
+import re
 from skimage.metrics import structural_similarity as ssim
 
 def load_image(path):
@@ -8,9 +9,17 @@ def load_image(path):
         return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return None
 
+def numerical_key(filename):
+    # Extract numbers from the filename and convert to an integer tuple for proper comparison
+    numbers = re.findall(r'\d+', filename)
+    return tuple(int(num) for num in numbers) if numbers else (0,)
+
 def main():
     images_dir = os.path.join(os.path.dirname(__file__), "images")
-    image_files = sorted([f for f in os.listdir(images_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+    image_files = sorted(
+        [f for f in os.listdir(images_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))],
+        key=numerical_key
+    )
     if len(image_files) < 4:
         print("Not enough images in directory.")
         return
