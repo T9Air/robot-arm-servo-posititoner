@@ -17,11 +17,11 @@ Servo top; // Pin 11
 
 // Servo min, max and center positions in microseconds
 // Will not be the exact for the arm being used - just for testing
-int baseMin = 1000; int baseMax = 2000; int baseCenter = 1500;
-int bottom1Min = 1000; int bottom1Max = 2000; int bottom1Center = 1500;
+int baseMin = 525; int baseMax = 2375; int baseCenter = 1450;
+int bottom1Min = 510; int bottom1Max = 2409; int bottom1Center = 1459;
 // bottom2 min and max are reversed because it is moving the opposite way of bottom1
-int bottom2Min = 2000; int bottom2Max = 1000; int bottom2Center = 1500;
-int topMin = 1000; int topMax = 2000; int topCenter = 1500;
+int bottom2Min = 2409; int bottom2Max = 510; int bottom2Center = 1460;
+int topMin = 510; int topMax = 2466; int topCenter = 1498;
 
 // Potentiometer for move amount
 int pot = A0;
