@@ -77,14 +77,15 @@ void setup() {
   pinMode(backward, INPUT_PULLUP);
 
   // Set up leds
-  pinMode(alarmLED, OUTPUT);
-  pinMode(moveLED, OUTPUT);
+  // pinMode(alarmLED, OUTPUT);
+  // pinMode(moveLED, OUTPUT);
+  pinMode(13, OUTPUT); // Use onboard LED for both alarm and move indication
 
   // Set the position of the arm joints
   // Will not be the exact for the arm being used - just for testing
   setJointOffsets(0,0,0, // Joint 1-2
-                  10,0,100, // Joint 2-3
-                  0,0,100); // Joint 3-end
+                  36.2,0,119.2, // Joint 2-3
+                  0,0,127.5); // Joint 3-end
 
   determinePosition(base_deg, bottom1_deg, top_deg);
   current_x = angleorposition[0];
@@ -164,7 +165,8 @@ void loop() {
         topDirection = -1;
       }
 
-      digitalWrite(moveLED, HIGH);
+      // digitalWrite(moveLED, HIGH);
+      digitalWrite(13, HIGH); // Onboard LED on during move
       // Move the servos
       for (int i = 0; i <= maxDiff; i++) {
         // Move servos
@@ -194,14 +196,22 @@ void loop() {
         angleorposition[2] = 0;
         delay(1);
       }
-      digitalWrite(moveLED, LOW);
+      // digitalWrite(moveLED, LOW);
+      digitalWrite(13, LOW); // Onboard LED off after move
     } else {
       target_x = current_x;
       target_y = current_y;
       target_z = current_z;
-      digitalWrite(alarmLED, HIGH);
-      delay(2000);
-      digitalWrite(alarmLED, LOW);
+      // digitalWrite(alarmLED, HIGH);
+      // delay(2000);
+      // digitalWrite(alarmLED, LOW);
+      // Blink onboard LED for 2 seconds, every 0.25 seconds
+      for (int i = 0; i < 8; i++) {
+        digitalWrite(13, HIGH);
+        delay(125);
+        digitalWrite(13, LOW);
+        delay(125);
+      }
     }
   }
 }
