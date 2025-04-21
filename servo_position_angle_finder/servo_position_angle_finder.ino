@@ -98,6 +98,8 @@ void setup() {
   angleorposition[0] = 0;
   angleorposition[1] = 0;
   angleorposition[2] = 0;
+
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -320,4 +322,57 @@ int bottom2DegMicro(int deg){
 }
 int topDegMicro(int deg){
   return map(deg, 0, 180, topMin, topMax);
+}
+
+void testKinematics() {
+  // Example test positions (x, y, z)
+  double testPositions[][3] = {
+    {current_x, current_y, current_z - 30},
+    {current_x, current_y + 10, current_z - 30},
+    {current_x - 20, current_y + 10, current_z - 60},
+    {current_x - 50, current_y - 30, current_z - 60}
+  };
+  int numTests = sizeof(testPositions) / sizeof(testPositions[0]);
+
+  Serial.println("Testing Forward and Inverse Kinematics:");
+  for (int i = 0; i < numTests; i++) {
+    double x = testPositions[i][0];
+    double y = testPositions[i][1];
+    double z = testPositions[i][2];
+
+    // Inverse kinematics: position -> angles
+    determineAngles(x, y, z);
+    double joint_1 = angleorposition[0];
+    double joint_2 = angleorposition[1];
+    double joint_3 = angleorposition[2];
+
+    Serial.print("Target (x,y,z): ");
+    Serial.print(x); Serial.print(", ");
+    Serial.print(y); Serial.print(", ");
+    Serial.print(z);
+
+    if (joint_1 == 1000 || joint_2 == 1000 || joint_3 == 1000) {
+      Serial.println(" -> Out of reach");
+      continue;
+    }
+
+    Serial.print(" | Angles: ");
+    Serial.print(joint_1, 2); Serial.print(", ");
+    Serial.print(joint_2, 2); Serial.print(", ");
+    Serial.print(joint_3, 2);
+
+    // Forward kinematics: angles -> position
+    determinePosition(joint_1, joint_2, joint_3);
+    double fx = angleorposition[0];
+    double fy = angleorposition[1];
+    double fz = angleorposition[2];
+
+    Serial.print(" | FK (x,y,z): ");
+    Serial.print(fx, 2); Serial.print(", ");
+    Serial.print(fy, 2); Serial.print(", ");
+    Serial.print(fz, 2);
+
+    Serial.println();
+  }
+  delay(2000); // Wait before next test cycle
 }
