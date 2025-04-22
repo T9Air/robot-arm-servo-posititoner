@@ -326,6 +326,9 @@ int topDegMicro(int deg){
 
 void testKinematics() {
   // Example test positions (x, y, z)
+  Serial.println(current_x);
+  Serial.println(current_y);
+  Serial.println(current_z);
   double testPositions[][3] = {
     {current_x, current_y, current_z - 30},
     {current_x, current_y + 10, current_z - 30},
